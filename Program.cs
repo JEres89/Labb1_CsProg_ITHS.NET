@@ -12,7 +12,7 @@ internal class Program
 		var timeNow = DateTime.Now;
 
 		var ranges = FindValidRangesInText(input);
-		var sequences = CountSequences(input, ranges);
+		var sequences = GenerateSequences(input, ranges);
 
 		long sum = 0;
 		foreach(var sequence in sequences)
@@ -28,39 +28,38 @@ internal class Program
 		Console.WriteLine($"Time taken: {timeEnd - timeNow}");
 	}
 
-
-
 	static Dictionary<int, int> FindValidRangesInText(string input)
 	{
-		Dictionary<int, int> completedSequencesV2 = new();
+		Dictionary<int, int> completedSequences = new();
 
-		Dictionary<char, int> activeSequenceStartsV2 = new();
+		Dictionary<char, int> activeSequenceStarts = new();
 
 		for(int currentIndex = 0 ; currentIndex < input.Length ; currentIndex++)
 		{
 			char c = input[currentIndex];
 			if(char.IsDigit(c))
 			{
-				if(activeSequenceStartsV2.TryGetValue(c, out var completingStart))
+				if(activeSequenceStarts.TryGetValue(c, out var completingStart))
 				{
-					completedSequencesV2.Add(completingStart, currentIndex-completingStart+1);
-					activeSequenceStartsV2.Remove(c);
+					completedSequences.Add(completingStart, currentIndex-completingStart+1);
+					activeSequenceStarts.Remove(c);
 				}
-				activeSequenceStartsV2.Add(c, currentIndex);
+				activeSequenceStarts.Add(c, currentIndex);
 			}
 			else
 			{
-				activeSequenceStartsV2.Clear();
+				activeSequenceStarts.Clear();
 			}
 		}
-		return completedSequencesV2;
+		return completedSequences;
 	}
 
-	static Sequence[] CountSequences(string input, Dictionary<int, int> sequenceRanges)
+	static Sequence[] GenerateSequences(string input, Dictionary<int, int> sequenceRanges)
 	{
 		Sequence[] sequences = new Sequence[sequenceRanges.Count];
 		int sequenceCount = 0;
-		for(int i = 0 ; i < input.Length ; i++)
+
+		for(int i = 0 ; sequenceCount < sequences.Length ; i++)
 		{
 			if(sequenceRanges.TryGetValue(i, out var length))
 			{
@@ -83,13 +82,9 @@ internal class Program
 	private class Sequence
 	{
 		char[][] _chars = new char[3][];
-		private int _beforeIndex;
-		private int _sequenceIndex;
-		private int _afterIndex;
 
 		private int _currentChars;
 		private int _currentIndex = 0;
-
 
 		public Sequence(int start, int length, int fullLength)
 		{
